@@ -18,10 +18,10 @@ namespace DownloadHTML.ViewModel
 		#region Fields
 		readonly MainWindow mainView;
 		string url;
-		string path;
+		string filePath;
 		static string folderName = "HTML";
 		string zipPath;
-		string pathString;
+		string folderPath;
 		#endregion
 
 		#region Constructor
@@ -30,9 +30,9 @@ namespace DownloadHTML.ViewModel
 			this.mainView = view;
 			URL = string.Empty;
 			CanSave = true;
-			path = string.Empty;			
-			pathString = Path.Combine(@"..\", folderName);
-			Directory.CreateDirectory(pathString);
+			filePath = string.Empty;			
+			folderPath = Path.Combine(@"..\", folderName);
+			Directory.CreateDirectory(folderPath);
 		}
 		#endregion
 		#region Properties
@@ -88,7 +88,7 @@ namespace DownloadHTML.ViewModel
 
 		#region Commands
 
-		//submiting the order
+		//downloading HTML
 
 		private ICommand downloadHTML;
 		public ICommand DownloadHTML
@@ -109,11 +109,11 @@ namespace DownloadHTML.ViewModel
 			{
 				using (WebClient client = new WebClient())
 				{
-					path = GeneratePath(URL);
+					filePath = GenerateFilePath(URL);
 					string htmlCode = client.DownloadString(URL);
-					await Task.Run(() => File.WriteAllText(path, htmlCode));
+					await Task.Run(() => File.WriteAllText(filePath, htmlCode));
 					IsFileCreated = true;
-					path = string.Empty;
+					filePath = string.Empty;
 					URL = string.Empty;
 					MessageBox.Show("You have successfully downloaded the HTML.");
 				}
@@ -124,10 +124,10 @@ namespace DownloadHTML.ViewModel
 			}
 		}
 
-		private string GeneratePath(string uRL)
+		private string GenerateFilePath(string uRL)
 		{
 			var sb = new StringBuilder();
-			sb.Append(pathString);
+			sb.Append(folderPath);
 			sb.Append(@"\");
 			sb.Append(ExtractDomainNameFromURL(uRL));
 			sb.Append(DateTime.Now.ToString("dd-MM-yyyy-hh-mm-ss-fff"));
@@ -157,7 +157,7 @@ namespace DownloadHTML.ViewModel
 			}
 		}
 
-		//Send SMS
+		//Zip files
 
 		private ICommand zipFiles;
 		public ICommand ZipFiles
@@ -178,9 +178,9 @@ namespace DownloadHTML.ViewModel
 			{
 				zipPath = GenerateZipPath();
 
-				ZipFile.CreateFromDirectory(pathString, zipPath, CompressionLevel.Fastest, false);
+				ZipFile.CreateFromDirectory(folderPath, zipPath, CompressionLevel.Fastest, false);
 		
-				var files = Directory.GetFiles(pathString);
+				var files = Directory.GetFiles(folderPath);
 
 				MessageBox.Show("You have successfuly zipped the files.");
 			}
@@ -202,7 +202,7 @@ namespace DownloadHTML.ViewModel
 
 		private bool CanZipFiles()
 		{
-			return Directory.GetFiles(pathString).Any();
+			return Directory.GetFiles(folderPath).Any();
 		}
 		#endregion
 	}
