@@ -3,8 +3,11 @@ using DownloadHTML.DataValidations;
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -16,7 +19,9 @@ namespace DownloadHTML.ViewModel
 		readonly MainWindow mainView;
 		string url;
 		string path;
-		StringBuilder stringBuilderPath;
+		static string folderName = "HTML";
+		string zipPath;
+		string pathString;
 		#endregion
 
 		#region Constructor
@@ -25,8 +30,9 @@ namespace DownloadHTML.ViewModel
 			this.mainView = view;
 			URL = string.Empty;
 			CanSave = true;
-			path = string.Empty;
-			stringBuilderPath = new StringBuilder();
+			path = string.Empty;			
+			pathString = Path.Combine(@"..\", folderName);
+			Directory.CreateDirectory(pathString);
 		}
 		#endregion
 		#region Properties
@@ -97,19 +103,18 @@ namespace DownloadHTML.ViewModel
 			}
 		}
 
-		private void DownloadHTMLExecute()
+		private async void DownloadHTMLExecute()
 		{
 			try
 			{
 				using (WebClient client = new WebClient())
 				{
 					path = GeneratePath(URL);
-					//client.DownloadFile(URL, path);
 					string htmlCode = client.DownloadString(URL);
-					File.WriteAllText(path, htmlCode);
+					await Task.Run(() => File.WriteAllText(path, htmlCode));
 					IsFileCreated = true;
 					path = string.Empty;
-					stringBuilderPath = new StringBuilder();
+					URL = string.Empty;
 					MessageBox.Show("You have successfully downloaded the HTML.");
 				}
 			}
@@ -121,11 +126,13 @@ namespace DownloadHTML.ViewModel
 
 		private string GeneratePath(string uRL)
 		{
-			stringBuilderPath.Append(@"..\");
-			stringBuilderPath.Append(ExtractDomainNameFromURL(uRL));
-			stringBuilderPath.Append(DateTime.Now.ToString("dd-MM-yyyy-hh-mm-ss-fff"));
-			stringBuilderPath.Append(".html");
-			return stringBuilderPath.ToString();
+			var sb = new StringBuilder();
+			sb.Append(pathString);
+			sb.Append(@"\");
+			sb.Append(ExtractDomainNameFromURL(uRL));
+			sb.Append(DateTime.Now.ToString("dd-MM-yyyy-hh-mm-ss-fff"));
+			sb.Append(".html");
+			return sb.ToString();
 		}
 
 		public string ExtractDomainNameFromURL(string Url)
@@ -169,7 +176,13 @@ namespace DownloadHTML.ViewModel
 		{
 			try
 			{
-				
+				zipPath = GenerateZipPath();
+
+				ZipFile.CreateFromDirectory(pathString, zipPath, CompressionLevel.Fastest, false);
+		
+				var files = Directory.GetFiles(pathString);
+
+				MessageBox.Show("You have successfuly zipped the files.");
 			}
 			catch (Exception)
 			{
@@ -177,11 +190,19 @@ namespace DownloadHTML.ViewModel
 			}
 		}
 
+		private string GenerateZipPath()
+		{
+			var sb = new StringBuilder();
+			sb.Append(folderName);
+			sb.Append("_");
+			sb.Append(DateTime.Now.ToString("dd-MM-yyyy-hh-mm-ss-fff"));
+			sb.Append(".zip");
+			return sb.ToString();
+		}
+
 		private bool CanZipFiles()
 		{
-			if (!IsFileCreated)
-				return false;
-			return true;
+			return Directory.GetFiles(pathString).Any();
 		}
 		#endregion
 	}
