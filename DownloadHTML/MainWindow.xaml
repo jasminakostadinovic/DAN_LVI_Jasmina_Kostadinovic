@@ -3,10 +3,46 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DownloadHTML"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+         mc:Ignorable="d"
+    Title="Download HTML" Background="#2e3137" Height="200" Width="500" WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <Style TargetType="TextBox">
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="true">
+                    <Setter Property="ToolTip"
+
+          Value="{Binding RelativeSource={x:Static RelativeSource.Self},
+Path=(Validation.Errors)[0].ErrorContent}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="460"/>
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="6"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="6"/>
+        </Grid.RowDefinitions>
+        <Label  Foreground="White" Content="URL:" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Left" />
+        <TextBox Grid.Column="1" Grid.Row="1" Name="txtURL"  Height="20" Width="300" HorizontalAlignment="Center" 
+                 TextWrapping="Wrap"  VerticalAlignment="Center" Margin="-80,0,0,0"
+                 Text="{Binding URL, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"/>
+
+        <Button Grid.Column="1" Grid.Row="1" Content="Download HTML" Name="btnDownloadHTML" HorizontalAlignment="Right" 
+                VerticalAlignment="Center" Width="100" 
+                Command="{Binding DownloadHTML, UpdateSourceTrigger=PropertyChanged}"
+                Background="#545d6a" Foreground="White"/>
+        <Button Grid.Column="1" Grid.Row="3" Content="Zip files" Name="btnZip" HorizontalAlignment="Right" 
+                VerticalAlignment="Center" Width="100" 
+                Command="{Binding ZipFiles, UpdateSourceTrigger=PropertyChanged}"
+                Background="#545d6a" Foreground="White"/>
+
     </Grid>
 </Window>
